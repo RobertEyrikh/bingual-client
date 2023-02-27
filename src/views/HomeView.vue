@@ -4,14 +4,14 @@ import TheHeader from "../components/TheHeader.vue";
 import AddCard from "../components/AddCard.vue";
 
 const cardList = ref([
-  { name: "My first card", qty: 15 },
-  { name: "My second card", qty: 20 },
-  { name: "My third card", qty: 10 },
-  { name: "My fourth card", qty: 12 },
-  { name: "My fifth card", qty: 11 },
-  { name: "My fifth card", qty: 11 },
-  { name: "My fifth card", qty: 11 },
-  { name: "My fifth card", qty: 11 },
+  { id: 1, name: "My first card", qty: 15 },
+  { id: 2, name: "My second card", qty: 20 },
+  { id: 3, name: "My third card", qty: 10 },
+  { id: 4, name: "My fourth card", qty: 12 },
+  { id: 5, name: "My fifth card", qty: 11 },
+  { id: 6, name: "My fifth card", qty: 11 },
+  { id: 7, name: "My fifth card", qty: 11 },
+  { id: 8, name: "My fifth card", qty: 11 },
 ]);
 </script>
 
@@ -20,10 +20,10 @@ const cardList = ref([
   <add-card></add-card>
   <section class="page">
     <div class="cards-wrapper">
-      <div v-for="card in cardList" class="card">
+      <div @click="this.$router.push(`/card/${card.id}`)" v-for="card in cardList" class="card">
         <div class="card-info">
           <p class="card-info__name">{{ card.name }}</p>
-          <p class="card-info__qty">{{ card.qty }}</p>
+          <p class="card-info__qty">Word count: {{ card.qty }}</p>
         </div>
         <button class="card-delete">
           <img class="card-delete__image" src="../assets/delete.svg" />
@@ -35,15 +35,15 @@ const cardList = ref([
 
 <style scoped>
 .page {
-  background-image: url("../assets/back.webp");
+  background-image: url("../assets/background.jpg");
   padding: 0px 20px;
   padding-bottom: 50px;
   min-height: 100vh;
 }
 .cards-wrapper {
-  background-color: rgba(81, 46, 46, 0.4);
+  background-color: rgba(78, 78, 78, 0.5);
   border-radius: 10px;
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(8px);
 }
 .card {
   height: 110px;
@@ -65,7 +65,7 @@ const cardList = ref([
   content: "";
 }
 .card:hover {
-  background-color: rgb(66, 38, 38);
+  background-color: rgb(65, 65, 65);
 }
 .card-info {
   margin-top: auto;

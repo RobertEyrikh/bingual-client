@@ -3,8 +3,12 @@
 <template>
   <header class="header">
     <div class="header-logo">
-      <img class="logo-image" src="../assets/logo.svg">
-      <p class="logo-name">Bilingual</p>
+      <img
+        class="logo-image"
+        @click="this.$router.push('/')"
+        src="../assets/logo.svg"
+      />
+      <p class="logo-name">Bingual</p>
     </div>
     <button class="header-user-button">Logout</button>
   </header>
@@ -22,7 +26,8 @@
   height: 60px;
 }
 .logo-image {
-  object-fit:cover;
+  cursor: pointer;
+  object-fit: cover;
   height: 80%;
 }
 .logo-name {

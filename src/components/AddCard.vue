@@ -1,8 +1,11 @@
 <script setup>
-import { ref, reactive } from "vue";
+import { ref } from "vue";
 import MyButton from "../components/UI/MyButton.vue";
 const isOpen = ref(false);
-const words = ref([]);
+const words = ref([{ word: "", translate: "" }]);
+const title = ref("");
+const dragItem = ref({});
+const dragOverItem = ref({});
 const deleteWord = (id) => {
   words.value.splice(id, 1);
 };
@@ -13,8 +16,32 @@ const addWord = () => {
   };
   words.value.push(word);
 };
-const check = () => {
-  console.log(words.value);
+const addNewCard = () => {
+  const card = {
+    title: title.value,
+    words: words.value,
+  };
+  console.log(card);
+};
+const handleSord = () => {
+  let _words = [...words.value];
+  const draggedWords = _words.splice(dragItem.value.current, 1)[0];
+  _words.splice(dragOverItem.value.current, 0, draggedWords)[0];
+  dragItem.value.current = null;
+  dragOverItem.value.current = null;
+  words.value = _words;
+};
+const entering = () => {
+  const elementsList = document.getElementsByClassName ("words-container")
+  for (let i = 0; i < elementsList.length; i ++) {
+    elementsList[i].setAttribute("draggable", "false");
+  }
+};
+const leaving = () => {
+  const elementsList = document.getElementsByClassName ("words-container")
+  for (let i = 0; i < elementsList.length; i ++) {
+    elementsList[i].setAttribute("draggable", "true");
+  }
 };
 </script>
 <template>
@@ -46,24 +73,37 @@ const check = () => {
           <div class="modal-body">
             <div class="modal-body__info">
               <p class="card-name">Enter the title</p>
-              <input type="text" class="field name-field" />
+              <input v-model="title" type="text" class="field name-field" />
             </div>
             <div v-if="words.length != 0" class="modal-body__words">
               <div class="words-title">
                 <p class="words-title__p">Enter a word</p>
                 <p class="words-title__p">Enter translation</p>
               </div>
-              <transition-group name="list" tag="div">
+              <transition-group name="list">
                 <div
+                  id="dragElement"
+                  draggable="true"
+                  @dragstart="dragItem.current = index"
+                  @dragenter="dragOverItem.current = index"
+                  @dragend="handleSord"
+                  @dragover.prevent
                   v-for="(word, index) of words"
-                  :key="word"
-                  class="words-container"
+                  :key="index"
+                  class="words-container my-handle"
                 >
                   {{ index + 1 }}
-                  <input v-model="words[index].word" class="field word-field" />
+                  <input
+                    @focus="entering()"
+                    @blur="leaving()"
+                    v-model="word.word"
+                    class="field word-field"
+                  />
                   <div>
                     <input
-                      v-model="words[index].translate"
+                      @focus="entering()"
+                      @blur="leaving()"
+                      v-model="word.translate"
                       class="field translate-field"
                     />
                     <p class="translate-word">word</p>
@@ -97,8 +137,10 @@ const check = () => {
             </button>
           </div>
           <div class="modal-footer">
-            <my-button @click="check" class="cancel-button">Cancel</my-button>
-            <my-button class="create-button">Create</my-button>
+            <my-button class="cancel-button">Cancel</my-button>
+            <my-button @click="addNewCard" class="create-button"
+              >Create</my-button
+            >
           </div>
         </div>
       </div>
@@ -106,17 +148,26 @@ const check = () => {
   </section>
 </template>
 <style scoped>
+.my-handle {
+  cursor: move;
+  cursor: -webkit-grabbing;
+  display: inline-block;
+}
+.list-move,
 .list-enter-active,
 .list-leave-active {
-  transition: all 1s ease;
+  transition: all 0.6s ease;
 }
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateX(-50px);
+}
+.list-leave-active {
+  position: absolute;
 }
 .add-card {
-  background-color: #111111;
+  background-color: rgb(0, 0, 0);
   height: 60px;
   padding: 20px;
 }
@@ -135,7 +186,7 @@ const check = () => {
   stroke: #ffa500;
 }
 .modal-wrapper {
-  position: fixed;
+  position: absolute;
   z-index: 9998;
   top: 0;
   left: 0;
@@ -145,22 +196,25 @@ const check = () => {
   transition: opacity 0.3s ease;
 }
 .modal-container {
-  border-radius: 10px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 330px;
-  min-height: 300px;
+  max-height: 600px;
   margin: auto;
   padding: 20px 30px;
   background-color: rgb(13, 13, 13);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
   transition: all 0.3s ease;
-  /* overflow: scroll; */
+  overflow: auto;
 }
 .modal-container::-webkit-scrollbar {
   width: 7px;
   background-color: inherit;
 }
 .modal-container::-webkit-scrollbar-thumb {
-  background-color: #223c50;
+  background-color: #835502;
 }
 .modal-header {
   padding-bottom: 20px;

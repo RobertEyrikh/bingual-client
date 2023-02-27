@@ -5,6 +5,10 @@ const routes = [
     path: "/",
     component: HomeView,
   },
+  {
+    path: "/card/:id",
+    component: () => import("../views/CardView.vue")
+  },
 ];
 
 const router = createRouter({
