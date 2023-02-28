@@ -6,8 +6,12 @@ const routes = [
     component: HomeView,
   },
   {
-    path: "/card/:id",
+    path: "/:id/card",
     component: () => import("../views/CardView.vue")
+  },
+  {
+    path: "/:id/study",
+    component: () => import("../views/StudyView.vue")
   },
 ];
 

@@ -20,7 +20,11 @@ const cardList = ref([
   <add-card></add-card>
   <section class="page">
     <div class="cards-wrapper">
-      <div @click="this.$router.push(`/card/${card.id}`)" v-for="card in cardList" class="card">
+      <div
+        @click="this.$router.push(`/${card.id}/card`)"
+        v-for="card in cardList"
+        class="card"
+      >
         <div class="card-info">
           <p class="card-info__name">{{ card.name }}</p>
           <p class="card-info__qty">Word count: {{ card.qty }}</p>
@@ -35,19 +39,19 @@ const cardList = ref([
 
 <style scoped>
 .page {
-  background-image: url("../assets/background.jpg");
+  background-color: #1a1a1a;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='107' height='107' viewBox='0 0 200 200'%3E%3Cdefs%3E%3ClinearGradient id='a' gradientUnits='userSpaceOnUse' x1='100' y1='33' x2='100' y2='-3'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3ClinearGradient id='b' gradientUnits='userSpaceOnUse' x1='100' y1='135' x2='100' y2='97'%3E%3Cstop offset='0' stop-color='%23000' stop-opacity='0'/%3E%3Cstop offset='1' stop-color='%23000' stop-opacity='1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='%23171717' fill-opacity='0.93'%3E%3Crect x='100' width='100' height='100'/%3E%3Crect y='100' width='100' height='100'/%3E%3C/g%3E%3Cg fill-opacity='0.93'%3E%3Cpolygon fill='url(%23a)' points='100 30 0 0 200 0'/%3E%3Cpolygon fill='url(%23b)' points='100 100 0 130 0 100 200 100 200 130'/%3E%3C/g%3E%3C/svg%3E");
   padding: 0px 20px;
   padding-bottom: 50px;
   min-height: 100vh;
 }
 .cards-wrapper {
-  background-color: rgba(78, 78, 78, 0.5);
+  background-color: rgba(146, 146, 146, 0.2);
   border-radius: 10px;
   backdrop-filter: blur(8px);
 }
 .card {
   height: 110px;
-  transition: all 0.2s;
   cursor: pointer;
   border-radius: 10px;
   padding: 20px;
@@ -85,7 +89,6 @@ const cardList = ref([
 .card-delete__image {
   object-fit: cover;
   height: 50%;
-  transition: all 0.2s;
   cursor: pointer;
 }
 .card-delete__image:hover {
