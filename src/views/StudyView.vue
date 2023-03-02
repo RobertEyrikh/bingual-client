@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import TheHeader from "../components/TheHeader.vue";
 import MyButton from "../components/UI/MyButton.vue";
+import RoundDiagramm from "../components/UI/RoundDiagramm.vue";
 onMounted(() => {
   window.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
@@ -12,6 +13,7 @@ onMounted(() => {
   // console.log(cardContainerHeight)
 });
 const result = ref({ rightAnswer: 0, wrongAnswer: 0 });
+const showResult = ref(false);
 const isError = ref(false);
 const words = ref([
   { word: "hello", translation: "привет" },
@@ -24,13 +26,25 @@ const words = ref([
 ]);
 const isDirectTranslation = ref(true);
 const translation = ref({});
+const successRate = computed(() => {
+  const rate =
+    (result.value.rightAnswer * 100) /
+    (result.value.rightAnswer + result.value.wrongAnswer);
+  return isFinite(rate) ? + rate.toFixed(0) : 100;
+});
+const checkErrorInWord = (index, word) => {
+  let wordType = isDirectTranslation.value ? "translation" : "word";
+  if (words.value[index][wordType] == word) {
+    words.value[index].error = null
+  }
+};
 const next = () => {
   isError.value = false;
   let wordType = isDirectTranslation.value ? "translation" : "word";
   for (let phrase in words.value) {
     if (
-      translation.value[words.value[phrase].word] !==
-      words.value[phrase][wordType]
+      translation.value[words.value[phrase].word]?.toUpperCase() !==
+      words.value[phrase][wordType]?.toUpperCase()
     ) {
       words.value[phrase].error = words.value[phrase][wordType];
       isError.value = true;
@@ -47,49 +61,87 @@ const next = () => {
     isDirectTranslation.value = !isDirectTranslation.value;
     translation.value = {};
   }
-  console.log(result.value)
 };
-const finish = () => {
-
+const restart = () => {
+  result.value.rightAnswer = 0;
+  result.value.wrongAnswer = 0;
+  showResult.value = false;
+  isDirectTranslation.value = true;
 }
+const goToResult = () => {
+  if (result.value.rightAnswer || result.value.wrongAnswer) {
+    showResult.value = true;
+    translation.value = {};
+    isError.value = false;
+    for (let phrase in words.value) {
+      delete words.value[phrase].error
+    }
+  } else {
+    console.log("enter the translation");
+  }
+};
 </script>
 
 <template>
   <the-header></the-header>
   <section class="study-view">
-    <nav class="study-buttons">
-      <my-button class="finish-button">Finish</my-button>
-      <my-button class="next-button">Next</my-button>
-    </nav>
-    <div v-if="isDirectTranslation" class="card-container" id="card-container">
+    <div
+      v-if="isDirectTranslation && !showResult"
+      class="card-container"
+      id="card-container"
+    >
       <h1 class="card-title">Enter word transtation</h1>
-      <div v-for="word in words" class="word-wrapper">
+      <div v-for="(word, index) in words" class="word-wrapper">
         <p class="word">{{ word.word }}</p>
         <input
           v-model="translation[word.word]"
           type="text"
           class="word-translation"
           :class="{ error: word.error }"
+          @change="checkErrorInWord(index, translation[word.word])"
         />
         <p class="word-error">{{ word?.error }}</p>
       </div>
     </div>
-    <div v-if="!isDirectTranslation" class="card-container">
+    <div v-if="!isDirectTranslation && !showResult" class="card-container">
       <h1 class="card-title">Enter word transtation</h1>
-      <div v-for="word in words" class="word-wrapper">
+      <div v-for="(word, index) in words" class="word-wrapper">
         <p class="word">{{ word.translation }}</p>
         <input
           v-model="translation[word.word]"
           type="text"
           class="word-translation"
           :class="{ error: word.error }"
+          @change="checkErrorInWord(index, translation[word.word])"
         />
         <p class="word-error">{{ word?.error }}</p>
       </div>
     </div>
-    <nav class="study-buttons">
-      <my-button class="finish-button">Finish</my-button>
-      <my-button @click="next" class="next-button">Next</my-button>
+    <div v-if="showResult" class="result-wrapper">
+      <div class="card-container">
+        <h1 class="card-title big-text">Your result</h1>
+        <div class="statics">
+          <div class="statics-diagram-container">
+            <round-diagramm :successRate="successRate"></round-diagramm>
+          </div>
+          <div class="statics-numbers-container">
+            <p class="statics-numbers">
+              Right answer: {{ result.rightAnswer }}
+            </p>
+            <p class="statics-numbers">
+              Wrong answer: {{ result.wrongAnswer }}
+            </p>
+          </div>
+        </div>
+      </div>
+      <nav class="study-buttons">
+        <my-button @click="this.$router.push('/')" class="finish-button">Finish</my-button>
+        <my-button @click="restart" class="next-button">Restart</my-button>
+      </nav>
+    </div>
+    <nav v-if="!showResult" class="study-buttons">
+      <my-button @click="goToResult" class="finish-button">Result</my-button>
+      <my-button @click="next" class="restart-button">Next</my-button>
     </nav>
   </section>
 </template>
@@ -115,6 +167,7 @@ const finish = () => {
   background-color: #ffa500;
   margin-right: 20px;
 }
+.restart-button,
 .next-button {
   background-color: #0062ff;
   margin-left: 20px;
@@ -136,9 +189,25 @@ const finish = () => {
   background-color: #1a1a1a;
   border-radius: 5px;
   font-size: 16px;
-  height: 24px;
+  width: 100%;
+  height: 30px;
   color: aliceblue;
   border: 1px solid #1a1a1a;
+}
+.statics {
+  display: flex;
+}
+.statics-diagram-container {
+  margin-right: 20px;
+}
+.statics-numbers-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.statics-numbers {
+  font-size: 20px;
+  margin-bottom: 20px;
 }
 .word-error {
   color: rgb(160, 3, 3);
@@ -146,6 +215,9 @@ const finish = () => {
 }
 .error {
   border: 1px solid red;
+}
+.big-text {
+  font-size: 23px;
 }
 @media screen and (max-width: 800px) {
   .word-wrapper {
