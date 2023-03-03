@@ -13,6 +13,18 @@ const routes = [
     path: "/:id/study",
     component: () => import("../views/StudyView.vue")
   },
+  {
+    path: "/login",
+    component: () => import("../views/LoginView.vue")
+  },
+  {
+    path: "/registration",
+    component: () => import("../views/RegistrationView.vue")
+  },
+  {
+    path: "/reset_password",
+    component: () => import("../views/ResetPassword.vue")
+  },
 ];
 
 const router = createRouter({

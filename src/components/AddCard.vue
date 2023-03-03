@@ -205,7 +205,7 @@ const leaving = () => {
   max-height: 600px;
   margin: auto;
   padding: 20px 30px;
-  background-color: rgb(13, 13, 13);
+  background-color: rgba(13, 13, 13, 0.9);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
   transition: all 0.3s ease;
   overflow: auto;
@@ -262,10 +262,10 @@ const leaving = () => {
   position: absolute;
 }
 .field {
-  background-color: #1a1a1a;
+  background-color: inherit;
   height: 30px;
   color: aliceblue;
-  border-radius: 5px;
+  border-bottom: 1px solid aliceblue
 }
 .plus-word {
   height: 50px;

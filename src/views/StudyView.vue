@@ -186,13 +186,11 @@ const goToResult = () => {
   margin-bottom: 20px;
 }
 .word-translation {
-  background-color: #1a1a1a;
-  border-radius: 5px;
+  background-color: inherit;
+  border-bottom: 1px solid white;
   font-size: 16px;
   width: 100%;
   height: 30px;
-  color: aliceblue;
-  border: 1px solid #1a1a1a;
 }
 .statics {
   display: flex;
