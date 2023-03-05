@@ -1,4 +1,14 @@
-<script setup></script>
+<script setup>
+import { useUserStore } from "../store/UserStore";
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+const userStore = useUserStore();
+const logout = () => {
+  userStore.logout()
+  router.push("/login")
+}
+</script>
 
 <template>
   <header class="header">
@@ -10,7 +20,7 @@
       />
       <p class="logo-name">Bingual</p>
     </div>
-    <button class="header-user-button">Logout</button>
+    <button @click="logout" class="header-user-button">Logout</button>
   </header>
 </template>
 

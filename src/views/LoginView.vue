@@ -1,6 +1,18 @@
 <script setup>
 import { ref } from "vue";
 import MyButton from "../components/UI/MyButton.vue";
+import { useUserStore } from "../store/UserStore";
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+const userStore = useUserStore();
+const email = ref("")
+const password = ref("")
+
+const signIn = () => {
+  userStore.login(email.value, password.value)
+  router.push("/")
+}
 </script>
 
 <template>
@@ -8,15 +20,16 @@ import MyButton from "../components/UI/MyButton.vue";
     <div class="login-form">
       <header class="login-header">
         <h1 class="login-header__title">Bingual</h1>
+        <h1>{{ userStore.getAuth }}</h1>
         <my-button class="login-header__button">Sign in with Google</my-button>
       </header>
       <p class="line"><span class="line__or">or</span></p>
       <div class="login-fields">
-        <input placeholder="Your email" type="text" class="email-field" />
+        <input v-model="email" placeholder="Your email" type="text" class="email-field" />
         <div class="error">
           <label class="error-message">123</label>
         </div>
-        <input placeholder="Your password" type="password" class="password-field" />
+        <input v-model="password" placeholder="Your password" type="password" class="password-field" />
         <div class="error">
           <label class="error-message">123</label>
         </div>
@@ -24,7 +37,7 @@ import MyButton from "../components/UI/MyButton.vue";
         </div>
       </div>
       <footer class="login-footer">
-        <my-button class="footer-button">Sign in</my-button>
+        <my-button @click="signIn" class="footer-button">Sign in</my-button>
         <div class="login-footer__links">
           <router-link to="/registration" class="link">Registration</router-link>
           <router-link to="/reset_password" class="link"
