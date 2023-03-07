@@ -1,13 +1,13 @@
 <script setup>
 import { useUserStore } from "../store/UserStore";
-import { useRouter } from 'vue-router'
-const router = useRouter()
+import { useRouter } from "vue-router";
+const router = useRouter();
 
 const userStore = useUserStore();
 const logout = () => {
-  userStore.logout()
-  router.push("/login")
-}
+  userStore.logout().then(() => router.push("/login"));
+};
+
 </script>
 
 <template>
@@ -19,6 +19,9 @@ const logout = () => {
         src="../assets/logo.svg"
       />
       <p class="logo-name">Bingual</p>
+    </div>
+    <div v-if="!userStore.getActivatedStatus" class="email-alert">
+      <p class="email-alert__title">Please confirm your email</p>
     </div>
     <button @click="logout" class="header-user-button">Logout</button>
   </header>
@@ -42,6 +45,16 @@ const logout = () => {
 }
 .logo-name {
   color: #ffa500;
+}
+.email-alert {
+  background-color: rgba(255, 165, 0, 0.5);
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 5px;
+}
+.email-alert__title {
+  color: aliceblue
 }
 .header-user-button {
   background-color: inherit;

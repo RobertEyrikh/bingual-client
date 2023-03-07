@@ -25,6 +25,7 @@ const routes = [
   },
   {
     path: "/registration",
+    name: "registration",
     component: () => import("../views/RegistrationView.vue"),
     beforeEnter: redirectIfAuth,
   },
@@ -41,7 +42,7 @@ const router = createRouter({
 
 function redirectIfAuth(to, from, next) {
   const userStore = useUserStore();
-  const isAuth = userStore.getAuth;
+  const isAuth = userStore.isTokenExist();
   if (isAuth) {
     next("/");
   } else {
@@ -50,9 +51,13 @@ function redirectIfAuth(to, from, next) {
 }
 function redirectIfGuest(to, from, next) {
   const userStore = useUserStore();
-  const isAuth = userStore.getAuth;
+  const isAuth = userStore.isTokenExist();
   if (!isAuth) {
-    next("/login");
+    if (from.name == "registration") {
+      next("/registration");
+    } else {
+      next("/login");
+    }
   } else {
     next();
   }

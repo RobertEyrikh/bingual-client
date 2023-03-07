@@ -1,6 +1,21 @@
 <script setup>
 import { ref } from "vue";
 import MyButton from "../components/UI/MyButton.vue";
+import { useUserStore } from "../store/UserStore";
+import { useRouter } from "vue-router";
+import useValidation from "../composables/useValidation";
+
+const router = useRouter();
+const userStore = useUserStore();
+const form = ref({});
+const { validatePasswordField, validateRepeatedPasswordField, validateEmailField, errors } = useValidation();
+
+const signUp = () => {
+  if(!errors.email && !errors.password && !errors.repeatedPassword) {
+    userStore.registration(form.value.email, form.value.password).then(() => {router.push("/")}, (e) => console.log(e));
+    form.value = {}
+  }
+};
 </script>
 
 <template>
@@ -8,27 +23,46 @@ import MyButton from "../components/UI/MyButton.vue";
     <div class="login-form">
       <header class="login-header">
         <h1 class="login-header__title">Bingual</h1>
-        <!-- <my-button class="login-header__button">Sign in with Google</my-button> -->
       </header>
-      <!-- <p class="line"><span class="line__or">or</span></p> -->
       <div class="login-fields">
-        <input placeholder="Your email" type="text" class="email-field" />
+        <input
+          @keyup="validateEmailField(form.email)"
+          @blur="validateEmailField(form.email)"
+          v-model="form.email"
+          placeholder="Your email"
+          type="text"
+          class="email-field"
+        />
         <div class="error">
-          <label class="error-message">123</label>
+          <label class="error-message">{{ errors.email }}</label>
         </div>
-        <input placeholder="Your password" type="password" class="password-field" />
+        <input
+          @blur="validatePasswordField(form.password)"
+          v-model="form.password"
+          placeholder="Your password"
+          type="password"
+          class="password-field"
+        />
         <div class="error">
-          <label class="error-message">123</label>
+          <label class="error-message">{{errors.password}}</label>
         </div>
-        <input placeholder="Repeat your password" type="password" class="password-field" />
+        <input
+          @keyup="validateRepeatedPasswordField(form.password, form.repeatedPassword)"
+          @blur="validateRepeatedPasswordField(form.password, form.repeatedPassword)"
+          v-model="form.repeatedPassword"
+          placeholder="Repeat your password"
+          type="password"
+          class="password-field"
+        />
         <div class="error">
-          <label class="error-message">123</label>
+          <label class="error-message">{{errors.repeatedPassword}}</label>
         </div>
-        <div class="server-response">
-        </div>
+        <div class="server-response"></div>
       </div>
       <footer class="login-footer">
-        <my-button class="footer-button">Registration</my-button>
+        <my-button @click="signUp" class="footer-button"
+          >Registration</my-button
+        >
         <div class="login-footer__links">
           <router-link to="/login" class="link">Login</router-link>
           <router-link to="/reset_password" class="link"
@@ -72,7 +106,7 @@ import MyButton from "../components/UI/MyButton.vue";
   position: relative;
 }
 .line__or {
-  background-color: #2F2F2F;
+  background-color: #2f2f2f;
   font-size: 20px;
   position: relative;
   z-index: 1;

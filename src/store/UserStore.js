@@ -11,10 +11,9 @@ export const useUserStore = defineStore("userStore", () => {
   const setAuth = (bool) => {
     isAuth.value = bool;
   };
-  const setUser = (user) => {
-    user.value = user;
+  const setUser = (userData) => {
+    user.value = userData;
   };
-
   const login = async (email, password) => {
     try {
       const response = await AuthService.login(email, password);
@@ -53,6 +52,7 @@ export const useUserStore = defineStore("userStore", () => {
         withCredentials: true,
       });
       localStorage.setItem("token", response.data.accessToken);
+      console.log(response.data.user)
       setAuth(true);
       setUser(response.data.user);
     } catch (e) {
@@ -66,13 +66,21 @@ export const useUserStore = defineStore("userStore", () => {
   const getAuth = computed(() => {
     return isAuth.value;
   });
+  const isTokenExist = () => {
+    return !!localStorage.getItem('token')
+  }
+  const getActivatedStatus = computed(() => {
+    return user.value.isActivated
+  })
 
   return {
     login,
     registration,
     logout,
     checkAuth,
+    isTokenExist,
     getUser,
     getAuth,
+    getActivatedStatus,
   };
 });

@@ -2,17 +2,22 @@
 import { ref } from "vue";
 import MyButton from "../components/UI/MyButton.vue";
 import { useUserStore } from "../store/UserStore";
-import { useRouter } from 'vue-router'
+import { useRouter } from "vue-router";
+import useValidation from "../composables/useValidation";
 
-const router = useRouter()
+const { validateByFieldName, errors } = useValidation();
+const router = useRouter();
 const userStore = useUserStore();
-const email = ref("")
-const password = ref("")
+const form = ref({});
 
 const signIn = () => {
-  userStore.login(email.value, password.value)
-  router.push("/")
-}
+  if (!errors.email && !errors.password) {
+    userStore
+      .login(form.value.email, form.value.password)
+      .then(() => router.push("/"));
+    form.value = {}
+  }
+};
 </script>
 
 <template>
@@ -20,26 +25,38 @@ const signIn = () => {
     <div class="login-form">
       <header class="login-header">
         <h1 class="login-header__title">Bingual</h1>
-        <h1>{{ userStore.getAuth }}</h1>
         <my-button class="login-header__button">Sign in with Google</my-button>
       </header>
       <p class="line"><span class="line__or">or</span></p>
       <div class="login-fields">
-        <input v-model="email" placeholder="Your email" type="text" class="email-field" />
+        <input
+          @blur="validateByFieldName('email', form.email)"
+          v-model="form.email"
+          placeholder="Your email"
+          type="text"
+          class="email-field"
+        />
         <div class="error">
-          <label class="error-message">123</label>
+          <label class="error-message">{{ errors.email }}</label>
         </div>
-        <input v-model="password" placeholder="Your password" type="password" class="password-field" />
+        <input
+          @blur="validateByFieldName('password', form.password)"
+          v-model="form.password"
+          placeholder="Your password"
+          type="password"
+          class="password-field"
+        />
         <div class="error">
-          <label class="error-message">123</label>
+          <label class="error-message">{{ errors.password }}</label>
         </div>
-        <div class="server-response">
-        </div>
+        <div class="server-response"></div>
       </div>
       <footer class="login-footer">
         <my-button @click="signIn" class="footer-button">Sign in</my-button>
         <div class="login-footer__links">
-          <router-link to="/registration" class="link">Registration</router-link>
+          <router-link to="/registration" class="link"
+            >Registration</router-link
+          >
           <router-link to="/reset_password" class="link"
             >Forgot your password?</router-link
           >
@@ -81,7 +98,7 @@ const signIn = () => {
   position: relative;
 }
 .line__or {
-  background-color: #2F2F2F;
+  background-color: #2f2f2f;
   font-size: 20px;
   position: relative;
   z-index: 1;
