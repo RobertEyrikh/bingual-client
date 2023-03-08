@@ -11,6 +11,9 @@ const form = ref({});
 const { validatePasswordField, validateRepeatedPasswordField, validateEmailField, errors } = useValidation();
 
 const signUp = () => {
+  validateEmailField(form.value.email)
+  validatePasswordField(form.value.password)
+  validateRepeatedPasswordField(form.value.password, form.value.repeatedPassword)
   if(!errors.email && !errors.password && !errors.repeatedPassword) {
     userStore.registration(form.value.email, form.value.password).then(() => {router.push("/")}, (e) => console.log(e));
     form.value = {}

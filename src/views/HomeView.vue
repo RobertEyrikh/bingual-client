@@ -9,9 +9,6 @@ const cardList = ref([
   { id: 3, name: "My third card", qty: 10 },
   { id: 4, name: "My fourth card", qty: 12 },
   { id: 5, name: "My fifth card", qty: 11 },
-  { id: 6, name: "My fifth card", qty: 11 },
-  { id: 7, name: "My fifth card", qty: 11 },
-  { id: 8, name: "My fifth card", qty: 11 },
 ]);
 </script>
 

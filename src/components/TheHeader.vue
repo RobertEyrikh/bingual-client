@@ -20,7 +20,7 @@ const logout = () => {
       />
       <p class="logo-name">Bingual</p>
     </div>
-    <div v-if="!userStore.getActivatedStatus" class="email-alert">
+    <div v-if="userStore.getActivatedStatus === false" class="email-alert">
       <p class="email-alert__title">Please confirm your email</p>
     </div>
     <button @click="logout" class="header-user-button">Logout</button>

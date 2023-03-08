@@ -1,11 +1,34 @@
 <script setup>
 import { ref } from "vue";
 import MyButton from "../components/UI/MyButton.vue";
+import TranslateService from "../services/TranslateService";
+
 const isOpen = ref(false);
-const words = ref([{ word: "", translate: "" }]);
+const words = ref([{ word: "", translate: "", apiTranslate: "" }]);
 const title = ref("");
 const dragItem = ref({});
 const dragOverItem = ref({});
+
+const transferWord = (index) => {
+  words.value[index].translate = words.value[index].apiTranslate
+  words.value[index].apiTranslate = ""
+}
+const checkTranslateForMatch = (index, word) => { 
+  const wordObj = words.value[index]
+  if (wordObj.apiTranslate.startsWith(word)) {
+    if(wordObj.apiTranslate === wordObj.translate) {
+      wordObj.apiTranslate = ""
+    }
+  } else {
+    wordObj.apiTranslate = ""
+  }
+}
+const getTranslate = async (index, word) => {
+  if (word) {
+    const translatedText = await TranslateService.getTranslate(word);
+    words.value[index].apiTranslate = translatedText;
+  }
+};
 const deleteWord = (id) => {
   words.value.splice(id, 1);
 };
@@ -13,6 +36,7 @@ const addWord = () => {
   let word = {
     word: "",
     translate: "",
+    apiTranslate: "",
   };
   words.value.push(word);
 };
@@ -95,18 +119,19 @@ const leaving = () => {
                   {{ index + 1 }}
                   <input
                     @focus="entering()"
-                    @blur="leaving()"
+                    @blur="leaving(), getTranslate(index, word.word)"
                     v-model="word.word"
                     class="field word-field"
                   />
                   <div>
                     <input
+                      @input="checkTranslateForMatch(index, word.translate)"
                       @focus="entering()"
                       @blur="leaving()"
                       v-model="word.translate"
                       class="field translate-field"
                     />
-                    <p class="translate-word">word</p>
+                    <p @click="transferWord(index)" class="api-translate-word">{{ word.apiTranslate }}</p>
                   </div>
                   <button @click="deleteWord(index)" class="delete-card">
                     <img
@@ -137,7 +162,7 @@ const leaving = () => {
             </button>
           </div>
           <div class="modal-footer">
-            <my-button class="cancel-button">Cancel</my-button>
+            <my-button @click.stop="isOpen = false" class="cancel-button">Cancel</my-button>
             <my-button @click="addNewCard" class="create-button"
               >Create</my-button
             >
@@ -257,7 +282,8 @@ const leaving = () => {
 .translate-field {
   width: 120px;
 }
-.translate-word {
+.api-translate-word {
+  cursor: pointer;
   font-size: 13px;
   position: absolute;
 }
@@ -265,7 +291,7 @@ const leaving = () => {
   background-color: inherit;
   height: 30px;
   color: aliceblue;
-  border-bottom: 1px solid aliceblue
+  border-bottom: 1px solid aliceblue;
 }
 .plus-word {
   height: 50px;

@@ -17,7 +17,6 @@ export const useUserStore = defineStore("userStore", () => {
   const login = async (email, password) => {
     try {
       const response = await AuthService.login(email, password);
-      console.log(response);
       localStorage.setItem("token", response.data.accessToken);
       setAuth(true);
       setUser(response.data.user);
@@ -28,7 +27,6 @@ export const useUserStore = defineStore("userStore", () => {
   const registration = async (email, password) => {
     try {
       const response = await AuthService.registration(email, password);
-      console.log(response);
       localStorage.setItem("token", response.data.accessToken);
       setAuth(true);
       setUser(response.data.user);
@@ -52,7 +50,6 @@ export const useUserStore = defineStore("userStore", () => {
         withCredentials: true,
       });
       localStorage.setItem("token", response.data.accessToken);
-      console.log(response.data.user)
       setAuth(true);
       setUser(response.data.user);
     } catch (e) {

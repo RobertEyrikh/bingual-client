@@ -11,11 +11,13 @@ const userStore = useUserStore();
 const form = ref({});
 
 const signIn = () => {
+  validateByFieldName('email', form.value.email)
+  validateByFieldName('password', form.value.password)
   if (!errors.email && !errors.password) {
     userStore
       .login(form.value.email, form.value.password)
-      .then(() => router.push("/"));
-    form.value = {}
+      .then(() => router.push("/"))
+      .then(() => form.value = {});
   }
 };
 </script>

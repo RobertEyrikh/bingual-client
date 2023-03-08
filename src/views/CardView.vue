@@ -23,7 +23,6 @@ const editWord = (id) => {
     return;
   }
   editWordId.value = id;
-  console.log(id);
 };
 </script>
 
@@ -35,7 +34,6 @@ const editWord = (id) => {
       class="study-button"
       >Study</my-button
     >
-    {{ $route.params.id }}
     <div class="words-container">
       <div class="word-wrapper" v-for="(word, index) of words">
         <p v-if="!isEdit(index)" class="word">{{ word.word }}</p>
