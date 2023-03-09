@@ -1,28 +1,34 @@
 <script setup>
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import MyButton from "../components/UI/MyButton.vue";
 import TranslateService from "../services/TranslateService";
+import CardService from "../services/CardService";
 
 const isOpen = ref(false);
 const words = ref([{ word: "", translate: "", apiTranslate: "" }]);
 const title = ref("");
 const dragItem = ref({});
 const dragOverItem = ref({});
+const error = ref("")
 
-const transferWord = (index) => {
-  words.value[index].translate = words.value[index].apiTranslate
-  words.value[index].apiTranslate = ""
+const closeModal = () => {
+  isOpen.value = false
+  error.value = ""
 }
-const checkTranslateForMatch = (index, word) => { 
-  const wordObj = words.value[index]
+const transferWord = (index) => {
+  words.value[index].translate = words.value[index].apiTranslate;
+  words.value[index].apiTranslate = "";
+};
+const checkTranslateForMatch = (index, word) => {
+  const wordObj = words.value[index];
   if (wordObj.apiTranslate.startsWith(word)) {
-    if(wordObj.apiTranslate === wordObj.translate) {
-      wordObj.apiTranslate = ""
+    if (wordObj.apiTranslate === wordObj.translate) {
+      wordObj.apiTranslate = "";
     }
   } else {
-    wordObj.apiTranslate = ""
+    wordObj.apiTranslate = "";
   }
-}
+};
 const getTranslate = async (index, word) => {
   if (word) {
     const translatedText = await TranslateService.getTranslate(word);
@@ -31,6 +37,7 @@ const getTranslate = async (index, word) => {
 };
 const deleteWord = (id) => {
   words.value.splice(id, 1);
+  error.value = ""
 };
 const addWord = () => {
   let word = {
@@ -39,13 +46,33 @@ const addWord = () => {
     apiTranslate: "",
   };
   words.value.push(word);
+  error.value = ""
 };
 const addNewCard = () => {
   const card = {
     title: title.value,
-    words: words.value,
+    words: [],
   };
-  console.log(card);
+  for (let word of words.value) {
+    if(!word.word || !word.translate || !title.value) {
+      error.value = "fill all fields"
+      return
+    }  
+    delete word.apiTranslate;
+    card.words.push(word);
+  }
+  CardService.addNewCard(card).then(
+    (res) => {
+      if(res.status == 200) {
+        closeModal()
+        words.value = [{ word: "", translate: "", apiTranslate: "" }]
+        title.value = ""
+      }
+    },
+    (reason) => {
+      error.value = reason.message
+    }
+  );
 };
 const handleSord = () => {
   let _words = [...words.value];
@@ -87,7 +114,7 @@ const leaving = () => {
       </svg>
     </button>
     <Transition name="modal">
-      <div @click.stop="isOpen = false" v-if="isOpen" class="modal-wrapper">
+      <div @click.stop="closeModal" v-if="isOpen" class="modal-wrapper">
         <div @click.stop class="modal-container">
           <div class="modal-header">
             <h1 class="modal-header__title">
@@ -131,7 +158,9 @@ const leaving = () => {
                       v-model="word.translate"
                       class="field translate-field"
                     />
-                    <p @click="transferWord(index)" class="api-translate-word">{{ word.apiTranslate }}</p>
+                    <p @click="transferWord(index)" class="api-translate-word">
+                      {{ word.apiTranslate }}
+                    </p>
                   </div>
                   <button @click="deleteWord(index)" class="delete-card">
                     <img
@@ -162,10 +191,15 @@ const leaving = () => {
             </button>
           </div>
           <div class="modal-footer">
-            <my-button @click.stop="isOpen = false" class="cancel-button">Cancel</my-button>
-            <my-button @click="addNewCard" class="create-button"
-              >Create</my-button
-            >
+            <p class="api-error">{{ error }}</p>
+            <div class="buttons-container">
+              <my-button @click.stop="closeModal" class="cancel-button"
+                >Cancel</my-button
+              >
+              <my-button @click="addNewCard" class="create-button"
+                >Create</my-button
+              >
+            </div>
           </div>
         </div>
       </div>
@@ -326,6 +360,14 @@ const leaving = () => {
   stroke: #ffa500;
 }
 .modal-footer {
+}
+.api-error {
+  color: red;
+  margin-bottom: 10px;
+  height: 20px;
+  text-align: center;
+}
+.buttons-container {
   display: flex;
   justify-content: space-between;
 }

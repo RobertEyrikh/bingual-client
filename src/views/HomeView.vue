@@ -1,15 +1,24 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import TheHeader from "../components/TheHeader.vue";
 import AddCard from "../components/AddCard.vue";
+import CardService from "../services/CardService";
 
-const cardList = ref([
-  { id: 1, name: "My first card", qty: 15 },
-  { id: 2, name: "My second card", qty: 20 },
-  { id: 3, name: "My third card", qty: 10 },
-  { id: 4, name: "My fourth card", qty: 12 },
-  { id: 5, name: "My fifth card", qty: 11 },
-]);
+onMounted(() => {
+  const getCards = CardService.getCards()
+  getCards.then((res) => {
+    let cards = res.data
+    for (let cardInfo of cards) {
+      let card = {
+        id: cardInfo._id,
+        title: cardInfo.title,
+        qty: cardInfo.words.length
+      }
+      cardList.value.push(card)
+    }
+  });
+});
+const cardList = ref([]);
 </script>
 
 <template>
@@ -23,7 +32,7 @@ const cardList = ref([
         class="card"
       >
         <div class="card-info">
-          <p class="card-info__name">{{ card.name }}</p>
+          <p class="card-info__name">{{ card.title }}</p>
           <p class="card-info__qty">Word count: {{ card.qty }}</p>
         </div>
         <button class="card-delete">

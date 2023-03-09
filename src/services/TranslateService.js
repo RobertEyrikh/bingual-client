@@ -12,7 +12,7 @@ export default class TranslateService {
         format: "text",
         api_key: "",
       });
-      return response.data.translatedText;
+      return response.data.translatedText.match(/[\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Lm}\p{Mn}\p{Nd}\p{Pc}']+/u)[0];
     } else {
       const response = await axios.post(`${API_URL}`, {
         q: word,
@@ -21,7 +21,7 @@ export default class TranslateService {
         format: "text",
         api_key: "",
       });
-      return response.data.translatedText;
+      return response.data.translatedText.match(/[\p{Ll}\p{Lu}\p{Lt}\p{Lo}\p{Lm}\p{Mn}\p{Nd}\p{Pc}']+/u)[0];
     }
   }
 }
