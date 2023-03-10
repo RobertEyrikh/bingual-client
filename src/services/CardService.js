@@ -8,7 +8,9 @@ export default class CardService {
     return $api.post("/getCardById", { cardId });
   }
   static async addNewCard(card) {
-    console.log(card)
-    return $api.post("/addCard", card );
+    return $api.post("/addCard", card);
+  }
+  static async deleteCard(cardId) {
+    return $api.post("/deleteCard", { cardId });
   }
 }

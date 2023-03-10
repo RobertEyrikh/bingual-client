@@ -1,43 +1,42 @@
 <script setup>
 import { ref, onMounted } from "vue";
-import { useRoute } from 'vue-router';
 import TheHeader from "../components/TheHeader.vue";
 import MyButton from "../components/UI/MyButton.vue";
-import CardService from "../services/CardService";
+import AddImage from "../components/UI/AddImage.vue";
+import useGetCard from "../composables/useGetCard";
 
-const route = useRoute();
 onMounted(() => {
-  const getCard = CardService.getCardById(route.params.id);
-  getCard.then((res) => {
-    const wordsData = res.data.words
-    cardTitle.value = res.data.title
-    for (let wordData of wordsData ) {
-      let word = {
-        word: wordData.word,
-        translation: wordData.translate
-      }
-      words.value.push(word)
-    }
-  });
+  useGetCard(words.value);
 });
-const cardTitle = ref("")
-const editWordId = ref(null);
+const cardTitle = ref("");
+const editWordIndex = ref(null);
 const words = ref([]);
+const errorElementId = ref("");
 
 const deleteWord = () => {
   //при удалении последнего слова карточка автоматически удаляется
-}
-const confirm = () => {
-  editWordId.value = null;
 };
-const isEdit = (id) => {
-  return id === editWordId.value;
+const addWord = () => {
+  words.value.push({ word: "", translation: "" });
+  editWord(words.value.length - 1);
 };
-const editWord = (id) => {
-  if (isEdit(id)) {
+const confirm = (index, word, translation) => {
+  if (!word && !translation) {
+    errorElementId.value = index;
     return;
   }
-  editWordId.value = id;
+  errorElementId.value = "";
+  console.log(word, translation);
+  editWordIndex.value = null;
+};
+const isEdit = (index) => {
+  return index === editWordIndex.value;
+};
+const editWord = (index) => {
+  if (isEdit(index)) {
+    return;
+  }
+  editWordIndex.value = index;
 };
 </script>
 
@@ -58,12 +57,14 @@ const editWord = (id) => {
           v-if="isEdit(index)"
           v-model="words[index].word"
           type="text"
+          :class="{ error: (errorElementId = index) }"
           class="word-edit"
         />
         <input
           v-if="isEdit(index)"
           v-model="words[index].translation"
           type="text"
+          :class="{ error: (errorElementId = index) }"
           class="word-edit"
         />
         <div class="word-ulits">
@@ -77,7 +78,9 @@ const editWord = (id) => {
           <div v-if="isEdit(index)" class="utils-image__wrapper">
             <img
               class="utils-image edit"
-              @click="confirm"
+              @click="
+                confirm(index, words[index].word, words[index].translation)
+              "
               src="../assets/confirm.svg"
             />
           </div>
@@ -87,6 +90,9 @@ const editWord = (id) => {
         </div>
       </div>
     </div>
+    <button @click="addWord" class="add-button">
+      <add-image />
+    </button>
   </div>
 </template>
 
@@ -121,7 +127,6 @@ const editWord = (id) => {
   grid-template-columns: 3fr 3fr 1fr;
   margin-bottom: 10px;
 }
-.word-edit,
 .word,
 .translation {
   margin-left: 20px;
@@ -130,6 +135,9 @@ const editWord = (id) => {
   font-size: 20px;
 }
 .word-edit {
+  font-size: 20px;
+  padding-left: 10px;
+  margin: 0 20px 0 10px;
   background-color: #1a1a1a;
   border-radius: 5px;
 }
@@ -150,6 +158,14 @@ const editWord = (id) => {
   height: 100%;
   object-fit: cover;
   cursor: pointer;
+}
+.add-button {
+  margin-top: 10px;
+  background-color: inherit;
+  height: 60px;
+}
+.error {
+  border: 1px solid red;
 }
 .delete:hover {
   filter: invert(48%) sepia(54%) saturate(1960%) hue-rotate(328deg)

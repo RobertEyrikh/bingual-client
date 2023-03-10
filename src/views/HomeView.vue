@@ -3,27 +3,66 @@ import { ref, onMounted } from "vue";
 import TheHeader from "../components/TheHeader.vue";
 import AddCard from "../components/AddCard.vue";
 import CardService from "../services/CardService";
+import AcceptModal from "../components/AcceptModal.vue";
 
 onMounted(() => {
-  const getCards = CardService.getCards()
+  const getCards = CardService.getCards();
   getCards.then((res) => {
-    let cards = res.data
+    let cards = res.data;
     for (let cardInfo of cards) {
       let card = {
         id: cardInfo._id,
         title: cardInfo.title,
-        qty: cardInfo.words.length
-      }
-      cardList.value.push(card)
+        qty: cardInfo.words.length,
+      };
+      cardList.value.push(card);
     }
   });
 });
+const error = ref("");
+const deletionCard = ref("");
 const cardList = ref([]);
+const isOpenAcceptModal = ref(false);
+
+const addNewCard = (card) => {
+  cardList.value.push(card)
+}
+const closeModal = () => {
+  isOpenAcceptModal.value = false;
+  deletionCard.value = "";
+  error.value = "";
+};
+const deletionConfirmation = (cardId) => {
+  deletionCard.value = cardId;
+  isOpenAcceptModal.value = true;
+};
+const deleteCard = () => {
+  const deleteCard = CardService.deleteCard(deletionCard.value);
+  deleteCard.then(
+    () => {
+      cardList.value.splice(
+        0,
+        cardList.value.length,
+        ...cardList.value.filter((n) => n.id !== deletionCard.value)
+      );
+      closeModal();
+    },
+    (reason) => {
+      error.value = reason.message;
+    }
+  );
+};
 </script>
 
 <template>
   <the-header></the-header>
-  <add-card></add-card>
+  <add-card @newCard="addNewCard"></add-card>
+  <accept-modal
+    :isOpen="isOpenAcceptModal"
+    :error="error"
+    @accept="deleteCard"
+    @close="closeModal"
+  ></accept-modal>
   <section class="page">
     <div class="cards-wrapper">
       <div
@@ -35,7 +74,7 @@ const cardList = ref([]);
           <p class="card-info__name">{{ card.title }}</p>
           <p class="card-info__qty">Word count: {{ card.qty }}</p>
         </div>
-        <button class="card-delete">
+        <button @click.stop="deletionConfirmation(card.id)" class="card-delete">
           <img class="card-delete__image" src="../assets/delete.svg" />
         </button>
       </div>

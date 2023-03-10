@@ -1,29 +1,23 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, reactive, onMounted, computed } from "vue";
 import TheHeader from "../components/TheHeader.vue";
 import MyButton from "../components/UI/MyButton.vue";
 import RoundDiagramm from "../components/UI/RoundDiagramm.vue";
+import useGetCard from "../composables/useGetCard"
+
 onMounted(() => {
   window.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
       next();
     }
   });
-  // const cardContainerHeight = document.getElementById("card-container").offsetHeight
-  // console.log(cardContainerHeight)
+  useGetCard(words)
 });
+
 const result = ref({ rightAnswer: 0, wrongAnswer: 0 });
 const showResult = ref(false);
 const isError = ref(false);
-const words = ref([
-  { word: "hello", translation: "привет" },
-  { word: "stay", translation: "оставаться" },
-  { word: "outside", translation: "снаружи" },
-  { word: "array", translation: "массив" },
-  { word: "star", translation: "звезда" },
-  { word: "gamble", translation: "азартная игра" },
-  { word: "pill", translation: "таблетка" },
-]);
+const words = reactive([]);
 const isDirectTranslation = ref(true);
 const translation = ref({});
 const successRate = computed(() => {
@@ -34,23 +28,23 @@ const successRate = computed(() => {
 });
 const checkErrorInWord = (index, word) => {
   let wordType = isDirectTranslation.value ? "translation" : "word";
-  if (words.value[index][wordType] == word) {
-    words.value[index].error = null
+  if (words[index][wordType] == word) {
+    words[index].error = null
   }
 };
 const next = () => {
   isError.value = false;
   let wordType = isDirectTranslation.value ? "translation" : "word";
-  for (let phrase in words.value) {
+  for (let phrase in words) {
     if (
-      translation.value[words.value[phrase].word]?.toUpperCase() !==
-      words.value[phrase][wordType]?.toUpperCase()
+      translation.value[words[phrase].word]?.toUpperCase() !==
+      words[phrase][wordType]?.toUpperCase()
     ) {
-      words.value[phrase].error = words.value[phrase][wordType];
+      words[phrase].error = words[phrase][wordType];
       isError.value = true;
       result.value.wrongAnswer += 1;
     } else {
-      words.value[phrase].error = null;
+      words[phrase].error = null;
       result.value.rightAnswer += 1;
       if (!isError.value) {
         isError.value = false;
@@ -73,8 +67,8 @@ const goToResult = () => {
     showResult.value = true;
     translation.value = {};
     isError.value = false;
-    for (let phrase in words.value) {
-      delete words.value[phrase].error
+    for (let phrase in words) {
+      delete words[phrase].error
     }
   } else {
     console.log("enter the translation");
@@ -191,6 +185,7 @@ const goToResult = () => {
   font-size: 16px;
   width: 100%;
   height: 30px;
+  border-top: 1px solid rgb(0, 0, 0, 0);
 }
 .statics {
   display: flex;
