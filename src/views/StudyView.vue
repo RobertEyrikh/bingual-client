@@ -1,9 +1,9 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from "vue";
+import { ref, reactive, onMounted, computed, watchEffect } from "vue";
 import TheHeader from "../components/TheHeader.vue";
 import MyButton from "../components/UI/MyButton.vue";
 import RoundDiagramm from "../components/UI/RoundDiagramm.vue";
-import useGetCard from "../composables/useGetCard"
+import useGetCard from "../composables/useGetCard";
 
 onMounted(() => {
   window.addEventListener("keydown", function (event) {
@@ -11,25 +11,29 @@ onMounted(() => {
       next();
     }
   });
-  useGetCard(words)
 });
 
+const { cardWords } = useGetCard();
 const result = ref({ rightAnswer: 0, wrongAnswer: 0 });
 const showResult = ref(false);
 const isError = ref(false);
 const words = reactive([]);
 const isDirectTranslation = ref(true);
 const translation = ref({});
+
 const successRate = computed(() => {
   const rate =
     (result.value.rightAnswer * 100) /
     (result.value.rightAnswer + result.value.wrongAnswer);
-  return isFinite(rate) ? + rate.toFixed(0) : 100;
+  return isFinite(rate) ? +rate.toFixed(0) : 100;
 });
+const setWords = () => {
+  cardWords.value.forEach((word) => words.push(word));
+}
 const checkErrorInWord = (index, word) => {
   let wordType = isDirectTranslation.value ? "translation" : "word";
   if (words[index][wordType] == word) {
-    words[index].error = null
+    words[index].error = null;
   }
 };
 const next = () => {
@@ -61,19 +65,20 @@ const restart = () => {
   result.value.wrongAnswer = 0;
   showResult.value = false;
   isDirectTranslation.value = true;
-}
+};
 const goToResult = () => {
   if (result.value.rightAnswer || result.value.wrongAnswer) {
     showResult.value = true;
     translation.value = {};
     isError.value = false;
     for (let phrase in words) {
-      delete words[phrase].error
+      delete words[phrase].error;
     }
   } else {
     console.log("enter the translation");
   }
 };
+watchEffect(() => setWords(cardWords.value))
 </script>
 
 <template>
@@ -129,7 +134,9 @@ const goToResult = () => {
         </div>
       </div>
       <nav class="study-buttons">
-        <my-button @click="this.$router.push('/')" class="finish-button">Finish</my-button>
+        <my-button @click="this.$router.push('/')" class="finish-button"
+          >Finish</my-button
+        >
         <my-button @click="restart" class="next-button">Restart</my-button>
       </nav>
     </div>

@@ -2,31 +2,24 @@
 import { ref, onMounted } from "vue";
 import TheHeader from "../components/TheHeader.vue";
 import AddCard from "../components/AddCard.vue";
-import CardService from "../services/CardService";
 import AcceptModal from "../components/AcceptModal.vue";
+import { useCardStore } from "../store/CardStore";
 
 onMounted(() => {
-  const getCards = CardService.getCards();
-  getCards.then((res) => {
-    let cards = res.data;
-    for (let cardInfo of cards) {
-      let card = {
-        id: cardInfo._id,
-        title: cardInfo.title,
-        qty: cardInfo.words.length,
-      };
-      cardList.value.push(card);
-    }
-  });
+  const cards = cardStore.getCardList;
+  cardList.value = cards;
+  error.value = cardStore.getError;
 });
+
+const cardStore = useCardStore();
 const error = ref("");
 const deletionCard = ref("");
 const cardList = ref([]);
 const isOpenAcceptModal = ref(false);
 
 const addNewCard = (card) => {
-  cardList.value.push(card)
-}
+  cardStore.addNewCard(card)
+};
 const closeModal = () => {
   isOpenAcceptModal.value = false;
   deletionCard.value = "";
@@ -37,20 +30,8 @@ const deletionConfirmation = (cardId) => {
   isOpenAcceptModal.value = true;
 };
 const deleteCard = () => {
-  const deleteCard = CardService.deleteCard(deletionCard.value);
-  deleteCard.then(
-    () => {
-      cardList.value.splice(
-        0,
-        cardList.value.length,
-        ...cardList.value.filter((n) => n.id !== deletionCard.value)
-      );
-      closeModal();
-    },
-    (reason) => {
-      error.value = reason.message;
-    }
-  );
+  const deleteCard = cardStore.deleteCard(deletionCard.value)
+  deleteCard.then(() => closeModal())
 };
 </script>
 

@@ -1,33 +1,39 @@
 import { createWebHistory, createRouter } from "vue-router";
 import HomeView from "../views/HomeView.vue";
-import { useUserStore } from "../store/UserStore";
+import authMiddleware from "../middlewares/auth-middleware";
+import notFoundMiddleware from "../middlewares/not-found-middleware";
 
 const routes = [
   {
     path: "/",
     component: HomeView,
-    beforeEnter: redirectIfGuest,
+    beforeEnter: authMiddleware.redirectIfGuest,
+  },
+  {
+    path: "/:pathMatch(.*)*",
+    name: "notFound",
+    component: () => import("../views/PageNotFound.vue"),
   },
   {
     path: "/:id/card",
     component: () => import("../views/CardView.vue"),
-    beforeEnter: redirectIfGuest,
+    beforeEnter: authMiddleware.redirectIfGuest && notFoundMiddleware.redirectIfNotFound,
   },
   {
     path: "/:id/study",
     component: () => import("../views/StudyView.vue"),
-    beforeEnter: redirectIfGuest,
+    beforeEnter: authMiddleware.redirectIfGuest,
   },
   {
     path: "/login",
     component: () => import("../views/LoginView.vue"),
-    beforeEnter: redirectIfAuth,
+    beforeEnter: authMiddleware.redirectIfAuth,
   },
   {
     path: "/registration",
     name: "registration",
     component: () => import("../views/RegistrationView.vue"),
-    beforeEnter: redirectIfAuth,
+    beforeEnter: authMiddleware.redirectIfAuth,
   },
   {
     path: "/reset_password",
@@ -39,28 +45,5 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 });
-
-function redirectIfAuth(to, from, next) {
-  const userStore = useUserStore();
-  const isAuth = userStore.isTokenExist();
-  if (isAuth) {
-    next("/");
-  } else {
-    next();
-  }
-}
-function redirectIfGuest(to, from, next) {
-  const userStore = useUserStore();
-  const isAuth = userStore.isTokenExist();
-  if (!isAuth) {
-    if (from.name == "registration") {
-      next("/registration");
-    } else {
-      next("/login");
-    }
-  } else {
-    next();
-  }
-}
 
 export default router;

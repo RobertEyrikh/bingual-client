@@ -1,22 +1,32 @@
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, watchEffect } from "vue";
 import TheHeader from "../components/TheHeader.vue";
 import MyButton from "../components/UI/MyButton.vue";
 import AddImage from "../components/UI/AddImage.vue";
 import useGetCard from "../composables/useGetCard";
 
-onMounted(() => {
-  useGetCard(words.value);
-});
+const { title, cardWords } = useGetCard();
 const cardTitle = ref("");
 const editWordIndex = ref(null);
 const words = ref([]);
 const errorElementId = ref("");
+const isTitleEdit = ref(false)
 
-const deleteWord = () => {
+const setWords = () => {
+  cardTitle.value = title.value 
+  cardWords.value.forEach((word) => words.value.push(word));
+}
+const changeTitle = () => {
+  console.log(cardTitle.value)
+}
+const deleteWord = (index, id) => {
   //при удалении последнего слова карточка автоматически удаляется
+  words.value.splice(index, 1)
 };
 const addWord = () => {
+  if(errorElementId.value) {
+    return
+  }
   words.value.push({ word: "", translation: "" });
   editWord(words.value.length - 1);
 };
@@ -33,17 +43,27 @@ const isEdit = (index) => {
   return index === editWordIndex.value;
 };
 const editWord = (index) => {
-  if (isEdit(index)) {
+  if (isEdit(index) || errorElementId.value) {
     return;
   }
   editWordIndex.value = index;
 };
+watchEffect(() => setWords(cardWords.value))
 </script>
 
 <template>
   <the-header></the-header>
   <div class="card-view">
-    <h1 class="card-title">{{ cardTitle }}</h1>
+    <header class="card-header">
+      <h1 v-if="!isTitleEdit" @click="isTitleEdit = true" class="card-title">{{ cardTitle }}</h1>
+      <input
+          v-if="isTitleEdit"
+          type="text"
+          class="title-edit "
+          v-model.trim="cardTitle"
+          @blur="changeTitle"
+        />
+    </header>
     <my-button
       @click="this.$router.push(`/${$route.params.id}/study`)"
       class="study-button"
@@ -58,7 +78,7 @@ const editWord = (index) => {
           v-model="words[index].word"
           type="text"
           :class="{ error: (errorElementId = index) }"
-          class="word-edit"
+          class="word-edit margin"
         />
         <input
           v-if="isEdit(index)"
@@ -68,25 +88,23 @@ const editWord = (index) => {
           class="word-edit"
         />
         <div class="word-ulits">
-          <div v-if="!isEdit(index)" class="utils-image__wrapper">
-            <img
-              class="utils-image edit"
-              @click="editWord(index)"
-              src="../assets/edit.svg"
-            />
-          </div>
-          <div v-if="isEdit(index)" class="utils-image__wrapper">
-            <img
-              class="utils-image edit"
-              @click="
-                confirm(index, words[index].word, words[index].translation)
-              "
-              src="../assets/confirm.svg"
-            />
-          </div>
-          <div class="utils-image__wrapper">
+          <button
+            @click="editWord(index)"
+            v-if="!isEdit(index)"
+            class="utils-image__wrapper"
+          >
+            <img class="utils-image edit" src="../assets/edit.svg" />
+          </button>
+          <button
+            @click="confirm(index, words[index].word, words[index].translation)"
+            v-if="isEdit(index)"
+            class="utils-image__wrapper"
+          >
+            <img class="utils-image edit" src="../assets/confirm.svg" />
+          </button>
+          <button @click="deleteWord(index, word.id)" class="utils-image__wrapper">
             <img class="utils-image delete" src="../assets/delete.svg" />
-          </div>
+          </button>
         </div>
       </div>
     </div>
@@ -106,15 +124,27 @@ const editWord = (index) => {
 .card-title {
   word-wrap: break-word;
   font-size: 20px;
-  text-align: center;
   margin-bottom: 30px;
   color: aliceblue;
+}
+.card-header {
+  display: flex;
+  justify-content: center;
+}
+.title-edit {
+  background-color: inherit;
+  font-size: 20px;
+  color: aliceblue;
+  margin-bottom: 30px;
+  text-align: center;
+  min-height: 10px;
 }
 .study-button {
   background-color: #ffa500;
   font-size: 20px;
 }
 .words-container {
+  min-height: 10px;
   margin-top: 20px;
   padding: 20px;
   background-color: rgba(146, 146, 146, 0.2);
@@ -149,6 +179,7 @@ const editWord = (index) => {
   padding: 0 5px;
 }
 .utils-image__wrapper {
+  background-color: inherit;
   height: 40px;
   flex: 1 1 auto;
   margin: 0 5px;
@@ -191,7 +222,12 @@ const editWord = (index) => {
     display: inline;
     padding-bottom: 40px;
   }
-  .word-edit,
+  .word-edit {
+    border-right: none;
+  }
+  .margin {
+    margin-bottom: 20px;
+  }
   .word {
     border-right: none;
     margin-bottom: 20px;
