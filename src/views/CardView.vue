@@ -4,31 +4,40 @@ import TheHeader from "../components/TheHeader.vue";
 import MyButton from "../components/UI/MyButton.vue";
 import AddImage from "../components/UI/AddImage.vue";
 import useGetCard from "../composables/useGetCard";
+import { useCardStore } from "../store/CardStore";
+import { useRoute } from "vue-router";
 
+const route = useRoute()
+const cardStore = useCardStore();
 const { title, cardWords } = useGetCard();
-const cardTitle = ref("");
 const editWordIndex = ref(null);
-const words = ref([]);
 const errorElementId = ref("");
 const isTitleEdit = ref(false)
+const currentTitle = ref("")
 
-const setWords = () => {
-  cardTitle.value = title.value 
-  cardWords.value.forEach((word) => words.value.push(word));
+const setCurrentTitle = () => {
+  currentTitle.value = title.value
 }
 const changeTitle = () => {
-  console.log(cardTitle.value)
+  if(currentTitle.value === title.value || !title.value) {
+    title.value = currentTitle.value
+    return
+  }
+  cardStore.changeCardTitle(route.params.id, title.value).then(() => currentTitle.value = "")
 }
 const deleteWord = (index, id) => {
-  //при удалении последнего слова карточка автоматически удаляется
-  words.value.splice(index, 1)
+  //нельзя удалять последнее слово
+  cardWords.value.splice(index, 1)
 };
+const changeCardWords = () => {
+
+}
 const addWord = () => {
   if(errorElementId.value) {
     return
   }
-  words.value.push({ word: "", translation: "" });
-  editWord(words.value.length - 1);
+  cardWords.value.push({ word: "", translation: "" });
+  editWord(cardWords.value.length - 1);
 };
 const confirm = (index, word, translation) => {
   if (!word && !translation) {
@@ -48,19 +57,19 @@ const editWord = (index) => {
   }
   editWordIndex.value = index;
 };
-watchEffect(() => setWords(cardWords.value))
 </script>
 
 <template>
   <the-header></the-header>
   <div class="card-view">
     <header class="card-header">
-      <h1 v-if="!isTitleEdit" @click="isTitleEdit = true" class="card-title">{{ cardTitle }}</h1>
+      <h1 v-if="!isTitleEdit" @click="isTitleEdit = true" class="card-title">{{ title }}</h1>
       <input
           v-if="isTitleEdit"
           type="text"
           class="title-edit "
-          v-model.trim="cardTitle"
+          v-model.trim="title"
+          @focus="setCurrentTitle"
           @blur="changeTitle"
         />
     </header>
@@ -70,19 +79,19 @@ watchEffect(() => setWords(cardWords.value))
       >Study</my-button
     >
     <div class="words-container">
-      <div class="word-wrapper" v-for="(word, index) of words">
+      <div class="word-wrapper" v-for="(word, index) of cardWords">
         <p v-if="!isEdit(index)" class="word">{{ word.word }}</p>
         <p v-if="!isEdit(index)" class="translation">{{ word.translation }}</p>
         <input
           v-if="isEdit(index)"
-          v-model="words[index].word"
+          v-model="cardWords[index].word"
           type="text"
           :class="{ error: (errorElementId = index) }"
           class="word-edit margin"
         />
         <input
           v-if="isEdit(index)"
-          v-model="words[index].translation"
+          v-model="cardWords[index].translation"
           type="text"
           :class="{ error: (errorElementId = index) }"
           class="word-edit"
@@ -96,7 +105,7 @@ watchEffect(() => setWords(cardWords.value))
             <img class="utils-image edit" src="../assets/edit.svg" />
           </button>
           <button
-            @click="confirm(index, words[index].word, words[index].translation)"
+            @click="confirm(index, cardWords[index].word, cardWords[index].translation)"
             v-if="isEdit(index)"
             class="utils-image__wrapper"
           >

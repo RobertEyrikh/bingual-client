@@ -13,4 +13,7 @@ export default class CardService {
   static async deleteCard(cardId) {
     return $api.post("/deleteCard", { cardId });
   }
+  static async changeCardTitle(cardId, title) {
+    return $api.post("/changeCardTitle", { cardId, title });
+  }
 }

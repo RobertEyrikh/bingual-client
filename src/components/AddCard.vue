@@ -77,6 +77,7 @@ const addNewCard = () => {
       emit("newCard", { id: res.data._id, title: res.data.title, qty: res.data.words.length })
     },
     (reason) => {
+      isOpenLoadingModal.value = false;
       error.value = reason.message;
     }
   );

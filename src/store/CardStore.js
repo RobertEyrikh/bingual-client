@@ -9,6 +9,17 @@ export const useCardStore = defineStore("cardStore", () => {
   const setCardsIdToSessionStorage = () => {
     sessionStorage.setItem("cardsId", JSON.stringify(refreshCardsId()))
   }
+  const setNewTitle = (cardId, newTitle) => {
+    for (let card of cardList) {
+      if (card.id === cardId) {
+        card.title = newTitle
+      }
+    }
+  }
+  const refreshCardsId = () => cardList.reduce((acc, { id }) => {
+    acc.push(id)
+    return acc
+  }, [])
   const setCards = (res) => {
     let cards = res.data;
     for (let cardInfo of cards) {
@@ -25,8 +36,6 @@ export const useCardStore = defineStore("cardStore", () => {
     cardList.push(card)
     setCardsIdToSessionStorage()
   }
-  
-
   const deleteCard = async (deletionCard) => {
     const deleteCard = CardService.deleteCard(deletionCard);
     deleteCard.then(
@@ -49,14 +58,14 @@ export const useCardStore = defineStore("cardStore", () => {
       setCards(res);
     });
   };
-  const refreshCardsId = () => cardList.reduce((acc, { id }) => {
-    acc.push(id)
-    return acc
-  }, [])
+  const changeCardTitle = async (cardId, newTitle) => {
+    const changeCardTitle = CardService.changeCardTitle(cardId, newTitle);
+    changeCardTitle.then(() => setNewTitle(cardId, newTitle)).catch((e) => console.log(e))
+  }
 
   const getError = computed(() => error.value)
   const getCardList = computed(() => cardList);
   const getCardsId = computed(() => JSON.parse(sessionStorage.getItem("cardsId")))
 
-  return { getCardListFromApi, deleteCard, addNewCard, getCardList, getError, getCardsId };
+  return { getCardListFromApi, deleteCard, addNewCard, changeCardTitle, getCardList, getError, getCardsId };
 });
