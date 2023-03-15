@@ -1,58 +1,126 @@
 <script setup>
-import { ref, watchEffect } from "vue";
+import { ref, computed } from "vue";
 import TheHeader from "../components/TheHeader.vue";
 import MyButton from "../components/UI/MyButton.vue";
 import AddImage from "../components/UI/AddImage.vue";
 import useGetCard from "../composables/useGetCard";
 import { useCardStore } from "../store/CardStore";
 import { useRoute } from "vue-router";
+import LoadingComponent from "../components/UI/LoadingComponent.vue";
+import useValidation from "../composables/useValidation";
+import CardService from "../services/CardService";
 
-const route = useRoute()
+const { errors, validateWordField } = useValidation();
+const route = useRoute();
 const cardStore = useCardStore();
 const { title, cardWords } = useGetCard();
 const editWordIndex = ref(null);
-const errorElementId = ref("");
-const isTitleEdit = ref(false)
-const currentTitle = ref("")
+const isTitleEdit = ref(false);
+const currentTitle = ref("");
+const cardId = route.params.id;
+const currentWords = ref({});
+const isNewWordSent = ref(true);
 
 const setCurrentTitle = () => {
-  currentTitle.value = title.value
-}
-const changeTitle = () => {
-  if(currentTitle.value === title.value || !title.value) {
-    title.value = currentTitle.value
-    return
-  }
-  cardStore.changeCardTitle(route.params.id, title.value).then(() => currentTitle.value = "")
-}
-const deleteWord = (index, id) => {
-  //нельзя удалять последнее слово
-  cardWords.value.splice(index, 1)
+  currentTitle.value = title.value;
 };
-const changeCardWords = () => {
+const setCurrentWords = (index) => {
+  currentWords.value.word = cardWords.value[index].word;
+  currentWords.value.translation = cardWords.value[index].translation;
+  currentWords.value.index = index;
+};
 
-}
-const addWord = () => {
-  if(errorElementId.value) {
-    return
-  }
-  cardWords.value.push({ word: "", translation: "" });
-  editWord(cardWords.value.length - 1);
-};
-const confirm = (index, word, translation) => {
-  if (!word && !translation) {
-    errorElementId.value = index;
+const changeTitle = () => {
+  if (currentTitle.value === title.value || !title.value) {
+    title.value = currentTitle.value;
     return;
   }
-  errorElementId.value = "";
-  console.log(word, translation);
+  cardStore
+    .changeCardTitle(route.params.id, title.value)
+    .then(() => (currentTitle.value = ""));
+};
+
+const deleteWord = (index, wordId) => {
+  if (cardWords.value.length === 1) {
+    return;
+  }
+  if (wordId) {
+    cardStore.deleteWord(cardId, wordId);
+  } else {
+    isNewWordSent.value = true
+  }
+  cardWords.value.splice(index, 1);
+};
+
+const addWord = () => {
+  if (isNewWordSent.value) {
+    cardWords.value.push({ word: "", translation: "" });
+    editWord(cardWords.value.length - 1);
+  }
+  isNewWordSent.value = false;
+};
+
+const editWordInCard = (index, word, translation) => {
+  validateWordField(index, cardWords.value[index].word);
+  validateWordField(index, cardWords.value[index].translation);
+  if (!cardWords.value[index]._id) {
+    if (errors[index]) {
+      return;
+    }
+    isNewWordSent.value = true;
+    const createNewWord = CardService.createNewWord(cardId, word, translation);
+    createNewWord.then((res) => {
+      cardWords.value = res.data.words;
+      cardStore.increaseWordsQty(cardId)
+    });
+    currentWords.value = {}
+    editWordIndex.value = null;
+    return;
+  }
+  const wordId = cardWords.value[index]._id;
+  if (
+    cardWords.value[index].word === currentWords.value.word &&
+    cardWords.value[index].translation === currentWords.value.translation
+  ) {
+    editWordIndex.value = null;
+    return;
+  }
+  if (errors[index]) {
+    return;
+  }
+  const changeWord = CardService.changeWordInCard(
+    cardId,
+    wordId,
+    word,
+    translation
+  );
+  changeWord.then(() => (editWordIndex.value = null));
+  currentWords.value = {}
+};
+const cancelWordEdit = (index) => {
+  if (!isNewWordSent.value && cardWords.value.length - 1 === index) {
+    cardWords.value.pop();
+    isNewWordSent.value = true;
+    return;
+  }
+  cardWords.value[index].word = currentWords.value.word;
+  cardWords.value[index].translation = currentWords.value.translation;
+  currentWords.value = {};
+  errors[index] = "";
   editWordIndex.value = null;
 };
+
 const isEdit = (index) => {
   return index === editWordIndex.value;
 };
 const editWord = (index) => {
-  if (isEdit(index) || errorElementId.value) {
+  if (currentWords.value.word) {
+    const index = currentWords.value.index;
+    cardWords.value[index].word = currentWords.value.word;
+    cardWords.value[index].translation = currentWords.value.translation;
+  }
+  setCurrentWords(index);
+  if (isEdit(index)) {
     return;
   }
   editWordIndex.value = index;
@@ -63,15 +131,17 @@ const editWord = (index) => {
   <the-header></the-header>
   <div class="card-view">
     <header class="card-header">
-      <h1 v-if="!isTitleEdit" @click="isTitleEdit = true" class="card-title">{{ title }}</h1>
+      <h1 v-if="!isTitleEdit" @click="isTitleEdit = true" class="card-title">
+        {{ title }}
+      </h1>
       <input
-          v-if="isTitleEdit"
-          type="text"
-          class="title-edit "
-          v-model.trim="title"
-          @focus="setCurrentTitle"
-          @blur="changeTitle"
-        />
+        v-if="isTitleEdit"
+        type="text"
+        class="title-edit"
+        v-model.trim="title"
+        @focus="setCurrentTitle"
+        @blur="changeTitle"
+      />
     </header>
     <my-button
       @click="this.$router.push(`/${$route.params.id}/study`)"
@@ -79,21 +149,24 @@ const editWord = (index) => {
       >Study</my-button
     >
     <div class="words-container">
+      <loading-component v-if="cardWords?.length == 0"></loading-component>
       <div class="word-wrapper" v-for="(word, index) of cardWords">
         <p v-if="!isEdit(index)" class="word">{{ word.word }}</p>
         <p v-if="!isEdit(index)" class="translation">{{ word.translation }}</p>
         <input
           v-if="isEdit(index)"
           v-model="cardWords[index].word"
+          @blur="validateWordField(index, cardWords[index].word)"
           type="text"
-          :class="{ error: (errorElementId = index) }"
+          :class="{ error: errors[index] }"
           class="word-edit margin"
         />
         <input
           v-if="isEdit(index)"
           v-model="cardWords[index].translation"
+          @blur="validateWordField(index, cardWords[index].translation)"
           type="text"
-          :class="{ error: (errorElementId = index) }"
+          :class="{ error: errors[index] }"
           class="word-edit"
         />
         <div class="word-ulits">
@@ -105,17 +178,35 @@ const editWord = (index) => {
             <img class="utils-image edit" src="../assets/edit.svg" />
           </button>
           <button
-            @click="confirm(index, cardWords[index].word, cardWords[index].translation)"
+            @click="
+              editWordInCard(
+                index,
+                cardWords[index].word,
+                cardWords[index].translation
+              )
+            "
             v-if="isEdit(index)"
             class="utils-image__wrapper"
           >
             <img class="utils-image edit" src="../assets/confirm.svg" />
           </button>
-          <button @click="deleteWord(index, word.id)" class="utils-image__wrapper">
+          <button
+            @click="cancelWordEdit(index)"
+            v-if="isEdit(index)"
+            class="utils-image__wrapper"
+          >
+            <img class="utils-image edit" src="../assets/cancel.svg" />
+          </button>
+          <button
+            @click="deleteWord(index, word._id)"
+            v-if="!isEdit(index)"
+            class="utils-image__wrapper"
+          >
             <img class="utils-image delete" src="../assets/delete.svg" />
           </button>
         </div>
       </div>
+      <p v-if="!isNewWordSent" class="not-sent-message">Сonfirm the addition of the word</p>
     </div>
     <button @click="addWord" class="add-button">
       <add-image />
@@ -207,6 +298,10 @@ const editWord = (index) => {
 .error {
   border: 1px solid red;
 }
+.not-sent-message {
+  margin: 10px;
+  color: #ffa500
+}
 .delete:hover {
   filter: invert(48%) sepia(54%) saturate(1960%) hue-rotate(328deg)
     brightness(97%) contrast(107%);
@@ -250,6 +345,15 @@ const editWord = (index) => {
   .utils-image__wrapper {
     flex: none;
     width: 40px;
+    margin-bottom: 10px;
+  }
+  .word-edit,
+  .title-edit,
+  .word,
+  .translation {
+    padding: 5px;
+    font-size: 20px;
+    margin-left: 10px;
   }
 }
 </style>

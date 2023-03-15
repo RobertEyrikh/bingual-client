@@ -7,7 +7,7 @@ import LoadingModal from "./LoadingModal.vue";
 import AddImage from "../components/UI/AddImage.vue";
 
 const isOpen = ref(false);
-const words = ref([{ word: "", translate: "", apiTranslate: "" }]);
+const words = ref([{ word: "", translation: "", apiTranslate: "" }]);
 const title = ref("");
 const dragItem = ref({});
 const dragOverItem = ref({});
@@ -21,7 +21,7 @@ const closeModal = () => {
   error.value = "";
 };
 const transferWord = (index) => {
-  words.value[index].translate = words.value[index].apiTranslate;
+  words.value[index].translation = words.value[index].apiTranslate;
   words.value[index].apiTranslate = "";
 };
 const checkTranslateForMatch = (index, word) => {
@@ -47,7 +47,7 @@ const deleteWord = (id) => {
 const addWord = () => {
   let word = {
     word: "",
-    translate: "",
+    translation: "",
     apiTranslate: "",
   };
   words.value.push(word);
@@ -59,7 +59,7 @@ const addNewCard = () => {
     words: [],
   };
   for (let word of words.value) {
-    if (!word.word || !word.translate || !title.value) {
+    if (!word.word || !word.translation || !title.value) {
       error.value = "fill all fields";
       return;
     }
@@ -72,7 +72,7 @@ const addNewCard = () => {
     (res) => {
       isOpenLoadingModal.value = false;
       closeModal();
-      words.value = [{ word: "", translate: "", apiTranslate: "" }];
+      words.value = [{ word: "", translation: "", apiTranslate: "" }];
       title.value = "";
       emit("newCard", { id: res.data._id, title: res.data.title, qty: res.data.words.length })
     },
@@ -148,10 +148,10 @@ const leaving = () => {
                   />
                   <div>
                     <input
-                      @input="checkTranslateForMatch(index, word.translate)"
+                      @input="checkTranslateForMatch(index, word.translation)"
                       @focus="entering()"
                       @blur="leaving()"
-                      v-model="word.translate"
+                      v-model="word.translation"
                       class="field translate-field"
                     />
                     <p @click="transferWord(index)" class="api-translate-word">

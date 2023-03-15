@@ -18,6 +18,9 @@ export default function () {
   const validateRepeatedPasswordField = (fieldValue, fieldValue2) => {
     errors.repeatedPassword = fieldValue != fieldValue2 ? "Password don't match" : ""
   }
+  const validateWordField = (index, fieldValue) => {
+    errors[index] = !fieldValue ? isEmpty("word", fieldValue) : ""
+  }
 
-  return { errors, validatePasswordField, validateRepeatedPasswordField, validateEmailField, validateByFieldName };
+  return { errors, validatePasswordField, validateRepeatedPasswordField, validateEmailField, validateByFieldName, validateWordField };
 }

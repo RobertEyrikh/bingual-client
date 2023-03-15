@@ -4,22 +4,24 @@ import CardService from "../services/CardService";
 
 export const useCardStore = defineStore("cardStore", () => {
   const cardList = reactive([]);
-  const error = ref("")
+  const error = ref("");
 
+  const increaseWordsQty = (cardId) => {
+    const card = cardList.find((card) => card.id == cardId);
+    card.qty += 1;
+  };
+  const decreaseWordsQty = (cardId) => {
+    const card = cardList.find((card) => card.id == cardId);
+    card.qty -= 1;
+  }
   const setCardsIdToSessionStorage = () => {
-    sessionStorage.setItem("cardsId", JSON.stringify(refreshCardsId()))
-  }
-  const setNewTitle = (cardId, newTitle) => {
-    for (let card of cardList) {
-      if (card.id === cardId) {
-        card.title = newTitle
-      }
-    }
-  }
-  const refreshCardsId = () => cardList.reduce((acc, { id }) => {
-    acc.push(id)
-    return acc
-  }, [])
+    sessionStorage.setItem("cardsId", JSON.stringify(refreshCardsId()));
+  };
+  const refreshCardsId = () =>
+    cardList.reduce((acc, { id }) => {
+      acc.push(id);
+      return acc;
+    }, []);
   const setCards = (res) => {
     let cards = res.data;
     for (let cardInfo of cards) {
@@ -30,12 +32,13 @@ export const useCardStore = defineStore("cardStore", () => {
       };
       cardList.push(card);
     }
-    setCardsIdToSessionStorage()
+    setCardsIdToSessionStorage();
   };
   const addNewCard = (card) => {
-    cardList.push(card)
-    setCardsIdToSessionStorage()
-  }
+    cardList.push(card);
+    setCardsIdToSessionStorage();
+  };
+
   const deleteCard = async (deletionCard) => {
     const deleteCard = CardService.deleteCard(deletionCard);
     deleteCard.then(
@@ -44,7 +47,7 @@ export const useCardStore = defineStore("cardStore", () => {
           0,
           cardList.length,
           ...cardList.filter((n) => n.id !== deletionCard)
-        )
+        );
         setCardsIdToSessionStorage();
       },
       (reason) => {
@@ -58,14 +61,43 @@ export const useCardStore = defineStore("cardStore", () => {
       setCards(res);
     });
   };
+
+  const setNewTitle = (cardId, newTitle) => {
+    for (let card of cardList) {
+      if (card.id === cardId) {
+        card.title = newTitle;
+      }
+    }
+  };
   const changeCardTitle = async (cardId, newTitle) => {
     const changeCardTitle = CardService.changeCardTitle(cardId, newTitle);
-    changeCardTitle.then(() => setNewTitle(cardId, newTitle)).catch((e) => console.log(e))
-  }
+    changeCardTitle
+      .then(() => setNewTitle(cardId, newTitle))
+      .catch((e) => console.log(e));
+  };
 
-  const getError = computed(() => error.value)
+  const deleteWord = async (cardId, wordId) => {
+    const deleteWord = CardService.deleteWord(cardId, wordId);
+    deleteWord
+      .then(() => {
+        decreaseWordsQty(cardId)
+      })
+      .catch((e) => console.log(e));
+  };
+
+  const getError = computed(() => error.value);
   const getCardList = computed(() => cardList);
-  const getCardsId = computed(() => JSON.parse(sessionStorage.getItem("cardsId")))
+  const getCardsId = () => JSON.parse(sessionStorage.getItem("cardsId"));
 
-  return { getCardListFromApi, deleteCard, addNewCard, changeCardTitle, getCardList, getError, getCardsId };
+  return {
+    getCardListFromApi,
+    deleteCard,
+    addNewCard,
+    changeCardTitle,
+    deleteWord,
+    increaseWordsQty,
+    getCardList,
+    getError,
+    getCardsId,
+  };
 });

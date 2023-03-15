@@ -16,4 +16,13 @@ export default class CardService {
   static async changeCardTitle(cardId, title) {
     return $api.post("/changeCardTitle", { cardId, title });
   }
+  static async deleteWord(cardId, wordId) {
+    return $api.post("/deleteWord", { cardId, wordId });
+  }
+  static async changeWordInCard(cardId, wordId, word, translation) {
+    return $api.post("/changeWordInCard", { cardId, wordId, word, translation });
+  }
+  static async createNewWord(cardId, word, translation) {
+    return $api.post("/createNewWord", { cardId, word, translation });
+  }
 }

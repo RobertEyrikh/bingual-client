@@ -19,6 +19,12 @@ const signUp = () => {
     form.value = {}
   }
 };
+const toLogin = () => {
+  errors.email = ""
+  errors.password = ""
+  errors.repeatedPassword = ""
+  router.push("/login")
+}
 </script>
 
 <template>
@@ -67,9 +73,9 @@ const signUp = () => {
           >Registration</my-button
         >
         <div class="login-footer__links">
-          <router-link to="/login" class="link">Login</router-link>
-          <router-link to="/reset_password" class="link"
-            >Forgot your password?</router-link
+          <a @click="toLogin" class="link">Login</a>
+          <a @click="this.$router.push('/reset_password')" class="link"
+            >Forgot your password?</a
           >
         </div>
       </footer>
@@ -162,6 +168,10 @@ const signUp = () => {
 .login-footer__links {
   display: flex;
   justify-content: space-between;
+}
+.link {
+  border-bottom: 1px solid aliceblue;
+  cursor: pointer;
 }
 @media screen and (max-width: 800px) {
   .login-form {

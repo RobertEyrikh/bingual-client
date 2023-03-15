@@ -8,16 +8,8 @@ export default function () {
   const title = ref("Card name");
   const cardWords = ref([]);
   getCard.then((res) => {
-    const wordsData = res.data.words;
     title.value = res.data.title;
-    for (let wordData of wordsData) {
-      let word = {
-        id: wordData._id,
-        word: wordData.word,
-        translation: wordData.translate,
-      };
-      cardWords.value.push(word);
-    }
+    cardWords.value = res.data.words
   });
   return { cardWords, title };
 }

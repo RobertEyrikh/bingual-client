@@ -21,7 +21,7 @@ export const useUserStore = defineStore("userStore", () => {
       setAuth(true);
       setUser(response.data.user);
     } catch (e) {
-      console.log(e.response?.data?.message);
+      throw new Error(e)
     }
   };
   const registration = async (email, password) => {

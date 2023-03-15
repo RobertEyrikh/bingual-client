@@ -7,6 +7,7 @@ import { useCardStore } from "../store/CardStore";
 
 onMounted(() => {
   const cards = cardStore.getCardList;
+  console.log(cards)
   cardList.value = cards;
   error.value = cardStore.getError;
 });

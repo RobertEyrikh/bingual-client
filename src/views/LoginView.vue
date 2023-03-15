@@ -9,16 +9,26 @@ const { validateByFieldName, errors } = useValidation();
 const router = useRouter();
 const userStore = useUserStore();
 const form = ref({});
+const responseError = ref("");
 
 const signIn = () => {
-  validateByFieldName('email', form.value.email)
-  validateByFieldName('password', form.value.password)
+  validateByFieldName("email", form.value.email);
+  validateByFieldName("password", form.value.password);
   if (!errors.email && !errors.password) {
-    userStore
-      .login(form.value.email, form.value.password)
-      .then(() => router.push("/"))
-      .then(() => form.value = {});
+    const login = userStore.login(form.value.email, form.value.password);
+    login.then(() => {
+      router.push("/");
+      form.value = {};
+    });
+    login.catch(() => {
+      responseError.value = "Invalid login or password";
+    });
   }
+};
+const toRegistration = () => {
+  errors.email = "";
+  errors.password = "";
+  router.push("/registration");
 };
 </script>
 
@@ -27,9 +37,9 @@ const signIn = () => {
     <div class="login-form">
       <header class="login-header">
         <h1 class="login-header__title">Bingual</h1>
-        <my-button class="login-header__button">Sign in with Google</my-button>
+        <!-- <my-button class="login-header__button">Sign in with Google</my-button> -->
       </header>
-      <p class="line"><span class="line__or">or</span></p>
+      <!-- <p class="line"><span class="line__or">or</span></p> -->
       <div class="login-fields">
         <input
           @blur="validateByFieldName('email', form.email)"
@@ -51,16 +61,20 @@ const signIn = () => {
         <div class="error">
           <label class="error-message">{{ errors.password }}</label>
         </div>
-        <div class="server-response"></div>
+        <div class="server-response-container">
+        <Transition >
+          <div v-if="responseError" class="response-error">
+            <p class="server-response">{{ responseError }}</p>
+          </div>
+        </Transition>
+      </div>
       </div>
       <footer class="login-footer">
         <my-button @click="signIn" class="footer-button">Sign in</my-button>
         <div class="login-footer__links">
-          <router-link to="/registration" class="link"
-            >Registration</router-link
-          >
-          <router-link to="/reset_password" class="link"
-            >Forgot your password?</router-link
+          <a @click="toRegistration" class="link">Registration</a>
+          <a @click="this.$router.push('/reset_password')" class="link"
+            >Forgot your password?</a
           >
         </div>
       </footer>
@@ -69,6 +83,15 @@ const signIn = () => {
 </template>
 
 <style scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
 .login-page {
   min-height: 100vh;
   padding-top: 40px;
@@ -146,13 +169,29 @@ const signIn = () => {
   margin: 20px 0;
   background-color: #ffa500;
 }
-.server-response {
+.response-error {
+  border-radius: 5px;
+  height: 40px;
+  background-color: rgb(118, 3, 3);
+}
+.server-response-container {
   height: 40px;
   border-radius: 5px;
+}
+.server-response {
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+  font-size: 17px;
+  color: aliceblue;
 }
 .login-footer__links {
   display: flex;
   justify-content: space-between;
+}
+.link {
+  border-bottom: 1px solid aliceblue;
+  cursor: pointer;
 }
 @media screen and (max-width: 800px) {
   .login-form {
