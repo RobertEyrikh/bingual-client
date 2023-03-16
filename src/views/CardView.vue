@@ -47,7 +47,7 @@ const deleteWord = (index, wordId) => {
   if (wordId) {
     cardStore.deleteWord(cardId, wordId);
   } else {
-    isNewWordSent.value = true
+    isNewWordSent.value = true;
   }
   cardWords.value.splice(index, 1);
 };
@@ -71,9 +71,9 @@ const editWordInCard = (index, word, translation) => {
     const createNewWord = CardService.createNewWord(cardId, word, translation);
     createNewWord.then((res) => {
       cardWords.value = res.data.words;
-      cardStore.increaseWordsQty(cardId)
+      cardStore.increaseWordsQty(cardId);
     });
-    currentWords.value = {}
+    currentWords.value = {};
     editWordIndex.value = null;
     return;
   }
@@ -95,12 +95,15 @@ const editWordInCard = (index, word, translation) => {
     translation
   );
   changeWord.then(() => (editWordIndex.value = null));
-  currentWords.value = {}
+  currentWords.value = {};
 };
 const cancelWordEdit = (index) => {
   if (!isNewWordSent.value && cardWords.value.length - 1 === index) {
     cardWords.value.pop();
     isNewWordSent.value = true;
+    currentWords.value = {};
+    errors[index] = "";
+    editWordIndex.value = null;
     return;
   }
   cardWords.value[index].word = currentWords.value.word;
@@ -151,10 +154,15 @@ const editWord = (index) => {
     <div class="words-container">
       <loading-component v-if="cardWords?.length == 0"></loading-component>
       <div class="word-wrapper" v-for="(word, index) of cardWords">
-        <p v-if="!isEdit(index)" class="word">{{ word.word }}</p>
-        <p v-if="!isEdit(index)" class="translation">{{ word.translation }}</p>
-        <input
-          v-if="isEdit(index)"
+        <div class="word-content" v-if="!isEdit(index)">
+          <p class="word">{{ word.word }}</p>
+          <p class="translation">
+            {{ word.translation }}
+          </p>
+        </div>
+        <div class="word-content" v-if="isEdit(index)">
+          <input
+
           v-model="cardWords[index].word"
           @blur="validateWordField(index, cardWords[index].word)"
           type="text"
@@ -162,13 +170,14 @@ const editWord = (index) => {
           class="word-edit margin"
         />
         <input
-          v-if="isEdit(index)"
+
           v-model="cardWords[index].translation"
           @blur="validateWordField(index, cardWords[index].translation)"
           type="text"
           :class="{ error: errors[index] }"
           class="word-edit"
         />
+        </div>
         <div class="word-ulits">
           <button
             @click="editWord(index)"
@@ -206,7 +215,9 @@ const editWord = (index) => {
           </button>
         </div>
       </div>
-      <p v-if="!isNewWordSent" class="not-sent-message">Сonfirm the addition of the word</p>
+      <p v-if="!isNewWordSent" class="not-sent-message">
+        Сonfirm the addition of the word
+      </p>
     </div>
     <button @click="addWord" class="add-button">
       <add-image />
@@ -254,8 +265,13 @@ const editWord = (index) => {
 .word-wrapper {
   display: grid;
   height: 50px;
-  grid-template-columns: 3fr 3fr 1fr;
+  grid-template-columns: 6fr 1fr;
   margin-bottom: 10px;
+}
+.word-content {
+  display: grid;
+  margin-bottom: 10px;
+  grid-template-columns: 1fr 1fr
 }
 .word,
 .translation {
@@ -297,10 +313,11 @@ const editWord = (index) => {
 }
 .error {
   border: 1px solid red;
+  box-sizing: border-box;
 }
 .not-sent-message {
   margin: 10px;
-  color: #ffa500
+  color: #ffa500;
 }
 .delete:hover {
   filter: invert(48%) sepia(54%) saturate(1960%) hue-rotate(328deg)
@@ -323,8 +340,16 @@ const editWord = (index) => {
 }
 @media screen and (max-width: 600px) {
   .word-wrapper {
-    display: inline;
-    padding-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    box-sizing: border-box;
+  }
+  .word-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 90px;
+    margin-bottom: 0;
   }
   .word-edit {
     border-right: none;
