@@ -1,8 +1,8 @@
 <script setup>
 import { useUserStore } from "../store/UserStore";
 import { useRouter } from "vue-router";
-const router = useRouter();
 
+const router = useRouter();
 const userStore = useUserStore();
 const logout = () => {
   userStore.logout().then(() => router.push("/login"));
@@ -15,7 +15,7 @@ const logout = () => {
     <div class="header-logo">
       <img
         class="logo-image"
-        @click="this.$router.push('/')"
+        @click="router.push('/')"
         src="../assets/logo.svg"
       />
       <p class="logo-name">Bingual</p>

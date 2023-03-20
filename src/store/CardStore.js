@@ -51,7 +51,7 @@ export const useCardStore = defineStore("cardStore", () => {
         setCardsIdToSessionStorage();
       },
       (reason) => {
-        error = reason.message;
+        error.value = reason.message;
       }
     );
   };

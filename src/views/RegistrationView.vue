@@ -74,7 +74,7 @@ const toLogin = () => {
         >
         <div class="login-footer__links">
           <a @click="toLogin" class="link">Login</a>
-          <a @click="this.$router.push('/reset_password')" class="link"
+          <a @click="router.push('/reset_password')" class="link"
             >Forgot your password?</a
           >
         </div>

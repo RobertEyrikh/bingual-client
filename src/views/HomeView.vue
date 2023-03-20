@@ -4,6 +4,7 @@ import TheHeader from "../components/TheHeader.vue";
 import AddCard from "../components/AddCard.vue";
 import AcceptModal from "../components/AcceptModal.vue";
 import { useCardStore } from "../store/CardStore";
+import { useRouter } from "vue-router";
 
 onMounted(() => {
   const cards = cardStore.getCardList;
@@ -11,6 +12,7 @@ onMounted(() => {
   error.value = cardStore.getError;
 });
 
+const router = useRouter();
 const cardStore = useCardStore();
 const error = ref("");
 const deletionCard = ref("");
@@ -47,7 +49,7 @@ const deleteCard = () => {
   <section class="page">
     <div class="cards-wrapper">
       <div
-        @click="this.$router.push(`/${card.id}/card`)"
+        @click="router.push(`/${card.id}/card`)"
         v-for="card in cardList"
         class="card"
       >

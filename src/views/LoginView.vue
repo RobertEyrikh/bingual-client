@@ -73,7 +73,7 @@ const toRegistration = () => {
         <my-button @click="signIn" class="footer-button">Sign in</my-button>
         <div class="login-footer__links">
           <a @click="toRegistration" class="link">Registration</a>
-          <a @click="this.$router.push('/reset_password')" class="link"
+          <a @click="router.push('/reset_password')" class="link"
             >Forgot your password?</a
           >
         </div>

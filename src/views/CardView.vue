@@ -5,12 +5,13 @@ import MyButton from "../components/UI/MyButton.vue";
 import AddImage from "../components/UI/AddImage.vue";
 import useGetCard from "../composables/useGetCard";
 import { useCardStore } from "../store/CardStore";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import LoadingComponent from "../components/UI/LoadingComponent.vue";
 import useValidation from "../composables/useValidation";
 import CardService from "../services/CardService";
 
 const { errors, validateWordField } = useValidation();
+const router = useRouter();
 const route = useRoute();
 const cardStore = useCardStore();
 const { title, cardWords } = useGetCard();
@@ -147,7 +148,7 @@ const editWord = (index) => {
       />
     </header>
     <my-button
-      @click="this.$router.push(`/${$route.params.id}/study`)"
+      @click="router.push(`/${$route.params.id}/study`)"
       class="study-button"
       >Study</my-button
     >

@@ -4,6 +4,7 @@ import TheHeader from "../components/TheHeader.vue";
 import MyButton from "../components/UI/MyButton.vue";
 import RoundDiagramm from "../components/UI/RoundDiagramm.vue";
 import useGetCard from "../composables/useGetCard";
+import { useRouter } from "vue-router";
 
 onMounted(() => {
   window.addEventListener("keydown", function (event) {
@@ -13,6 +14,7 @@ onMounted(() => {
   });
 });
 
+const router = useRouter();
 const { cardWords } = useGetCard();
 const result = ref({ rightAnswer: 0, wrongAnswer: 0 });
 const showResult = ref(false);
@@ -93,7 +95,8 @@ watchEffect(() => setWords(cardWords.value))
       <div v-for="(word, index) in words" class="word-wrapper">
         <p class="word">{{ word.word }}</p>
         <input
-          v-model="translation[word.word]"
+          v-model.trim="translation[word.word]"
+          @input="() => (translation[word.word] = translation[word.word].toUpperCase())"
           type="text"
           class="word-translation"
           :class="{ error: word.error }"
@@ -107,7 +110,8 @@ watchEffect(() => setWords(cardWords.value))
       <div v-for="(word, index) in words" class="word-wrapper">
         <p class="word">{{ word.translation }}</p>
         <input
-          v-model="translation[word.word]"
+          v-model.trim="translation[word.word]"
+          @input="() => (translation[word.word] = translation[word.word].toUpperCase())"
           type="text"
           class="word-translation"
           :class="{ error: word.error }"
@@ -134,7 +138,7 @@ watchEffect(() => setWords(cardWords.value))
         </div>
       </div>
       <nav class="study-buttons">
-        <my-button @click="this.$router.push('/')" class="finish-button"
+        <my-button @click="router.push('/')" class="finish-button"
           >Finish</my-button
         >
         <my-button @click="restart" class="next-button">Restart</my-button>

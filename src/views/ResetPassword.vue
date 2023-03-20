@@ -1,5 +1,8 @@
 <script setup>
 import MyButton from "../components/UI/MyButton.vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 </script>
 
 <template>
@@ -18,7 +21,7 @@ import MyButton from "../components/UI/MyButton.vue";
       <footer class="reset-footer">
         <my-button class="reset-button">Send Link</my-button>
         <my-button
-          @click="this.$router.push('/login')"
+          @click="router.push('/login')"
           class="reset-button red"
           >Cancel</my-button
         >
