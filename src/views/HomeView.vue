@@ -84,6 +84,10 @@ const deleteCard = () => {
   border-radius: 10px;
   padding: 20px;
   display: flex;
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;  
+  display: -webkit-flex;
   justify-content: space-between;
   position: relative;
 }
